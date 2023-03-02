@@ -5,9 +5,8 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.GET
 
-//
-object AlpacaPartyNetwork {
-    val retrofit by lazy {
+object DataSource {
+    val retrofit: AlpacaPartyAPI by lazy {
         Retrofit.Builder()
             .baseUrl("https://in2000-proxy.ifi.uio.no/alpacaapi/")
             .addConverterFactory(GsonConverterFactory.create())
