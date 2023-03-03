@@ -10,3 +10,6 @@ data class AlpacaParty (
     val img: String, //URl image if leader
     val color: String, //hex color
 )
+data class AlpacaPartyList(
+    val parties: List<AlpacaParty>
+)
