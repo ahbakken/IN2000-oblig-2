@@ -10,6 +10,8 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import com.example.ahbakken_oblig2.ui.screens.AlpacaScreen
+import com.example.ahbakken_oblig2.ui.screens.AlpacaViewModel
 import com.example.ahbakken_oblig2.ui.theme.Ahbakken_oblig2Theme
 
 class MainActivity : ComponentActivity() {
@@ -22,7 +24,8 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    Greeting("Android")
+                    var alpacaViewModel = AlpacaViewModel
+                    AlpacaScreen(alpacaViewModel)
                 }
             }
         }
