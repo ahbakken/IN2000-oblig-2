@@ -5,6 +5,10 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -16,18 +20,16 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.graphics.toColorInt
+import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
+import coil.request.ImageRequest
 import com.example.ahbakken_oblig2.R
 import com.example.ahbakken_oblig2.model.AlpacaParty
 import com.example.ahbakken_oblig2.model.Party
 import com.example.ahbakken_oblig2.model.Vote
-import coil.request.ImageRequest
-import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.compose.foundation.layout.Column
-import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
+import androidx.compose.material.Text as ComposeText
+import androidx.compose.material.Icon as ComposeIcon
+import androidx.compose.material.DropdownMenu as ComposeDropdownMenu
 
 
 
@@ -52,7 +54,6 @@ fun AlpacaScreen(
 
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ChooseDistrict(
     alpacaViewModel: AlpacaViewModel,
@@ -60,41 +61,32 @@ fun ChooseDistrict(
     districts: List<String>
 ) {
 
-    var expanded by remember{ mutableStateOf(false) }
-    var selectedOptionText by remember { mutableStateOf(defaultDistrict) }
+    var selectedItem by remember { mutableStateOf(districts[0]) }
+    var expanded by remember { mutableStateOf(false) }
 
-        ExposedDropdownMenuBox(
-        expanded = expanded,
-        onExpandedChange = { expanded = !expanded }
+    Box(modifier = Modifier
+        .fillMaxWidth()
     ) {
-        TextField(
-            readOnly = true,
-            value = selectedOptionText,
-            onValueChange = { },
-            label = { Text("Choose district") },
-            trailingIcon = {
-                ExposedDropdownMenuDefaults.TrailingIcon(
-                    expanded = expanded
-                )
-            },
-            colors = ExposedDropdownMenuDefaults.textFieldColors()
-        )
-            ExposedDropdownMenu(
-                expanded = expanded,
-                onDismissRequest = { expanded = !expanded },
-            ) {
-                districts.forEach {selectionOption ->
-                    DropdownMenuItem(
-                        onClick = {
-                            selectedOptionText = selectionOption
-                            alpacaViewModel.updateDistrict(selectionOption)
-                            expanded = !expanded
-                        },
-                        text = { selectedOptionText }
-                    )
-
-            }
+        IconButton(onClick = { expanded = true }) {
+            ComposeText(selectedItem.toString())
+            ComposeIcon(Icons.Filled.ArrowDropDown, contentDescription = "Dropdown")
         }
+
+        ComposeDropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false },
+            modifier = Modifier.fillMaxWidth(),
+            content = {
+                districts.forEachIndexed { index, district ->
+                    DropdownMenuItem(onClick = {
+                        selectedItem = districts[index]
+                        expanded = false
+                    }) {
+                        Text(text = district)
+                    }
+                }
+            }
+        )
     }
 }
 
@@ -116,31 +108,10 @@ fun AlpacaPartyCard(
     val voteListDistrict3: List<Party> = voteUiState.votes3
     val voteMapDistrict3 = alpacaViewModel.sumAlpacaVotesXML(voteListDistrict3)
 
-
     val alpacaUiState by alpacaViewModel.alpacaUiState.collectAsState()
 
-    var districtVotes by remember{ mutableStateOf("${alpacaViewModel.sumAlpacaPartyVotes(voteMapDistrict1, voteMapDistrict2, voteMapDistrict3)[alpacaParty.id]}") }
     var currentDistrict by remember{ mutableStateOf(alpacaUiState.district) }
 
-    districtVotes = when (currentDistrict) {
-        districts[0] -> if (voteListDistrict1.isNotEmpty() && voteListDistrict2.isNotEmpty() && voteListDistrict3.isNotEmpty() ) {
-            "Votes:  ${alpacaViewModel.sumAlpacaPartyVotes(voteMapDistrict1, voteMapDistrict2, voteMapDistrict3)[alpacaParty.id]} %"
-        } else {"Could not calculate"}
-
-        districts[1] -> if (voteListDistrict1.isNotEmpty()) {
-            "Votes: ${voteMapDistrict1[alpacaParty.id]} --- ${calcPercentVotes(alpacaParty, voteMapDistrict1, (voteListDistrict1.size.toFloat()) * 100)}"
-        } else {"Could not calculate"}
-
-        districts[2] -> if (voteListDistrict2.isNotEmpty()) {
-            "Votes: ${voteMapDistrict2[alpacaParty.id]} --- ${calcPercentVotes(alpacaParty, voteMapDistrict2, (voteListDistrict2.size.toFloat()) * 100)}"
-        }  else {"Could not calculate" }
-
-        districts[3] -> if (voteListDistrict2.isNotEmpty()) {
-            "Votes: ${voteMapDistrict3[alpacaParty.id]} --- ${calcPercentVotes(alpacaParty, voteMapDistrict3, (voteListDistrict3.size.toFloat()) * 100)}"
-        } else {"Could not calculate" }
-
-        else -> { "Could not calculate" }
-    }
 
     ElevatedCard(
         modifier = Modifier
@@ -177,19 +148,29 @@ fun AlpacaPartyCard(
             Text(
                 text = alpacaParty.leader,
             )
-            
-            Text(text = "Votes: $districtVotes")
+
+            if (voteListDistrict1.isNotEmpty() && voteListDistrict2.isNotEmpty() && voteListDistrict3.isNotEmpty() && alpacaUiState.district == "All districts") {
+                val totalVotes = alpacaViewModel.sumAlpacaPartyVotes(voteMapDistrict1, voteMapDistrict2, voteMapDistrict3)
+                Text(text = "Votes: $totalVotes --- ")
+            }
+            if (voteListDistrict1.isNotEmpty() && alpacaUiState.district == "District 1"){
+                val totalVotes = voteMapDistrict1[alpacaParty.id]
+                val percentVotes = String.format("%.1f", (voteMapDistrict1[alpacaParty.id]!!/voteListDistrict1.size.toFloat()*100))
+                Text(text = "Votes: $totalVotes --- $percentVotes%")
+            }
+            if (voteListDistrict2.isNotEmpty() && alpacaUiState.district == "District 2"){
+                val totalVotes = voteMapDistrict2[alpacaParty.id]
+                val percentVotes = String.format("%.1f", (voteMapDistrict1[alpacaParty.id]!!/voteListDistrict2.size.toFloat()*100))
+                Text(text = "Votes: $totalVotes --- $percentVotes%")
+            }
+            if (voteListDistrict2.isNotEmpty() && alpacaUiState.district == "District 3"){
+                val totalVotes = voteMapDistrict3[alpacaParty.id]
+                val percentVotes = String.format("%.1f", (voteMapDistrict1[alpacaParty.id]!!/voteListDistrict3.size.toFloat()*100))
+                Text(text = "Votes: $totalVotes --- $percentVotes%")
+            }
 
         }
 
     }
 }
 
-fun calcPercentVotes(
-    alpacaParty: AlpacaParty,
-    mapDistrict: Map<String, Int?>,
-    listDistrictSize: Float
-): String {
-    val votes: Float = (mapDistrict[alpacaParty.id]!! / listDistrictSize)
-    return String.format("%.1f", votes)
-}
