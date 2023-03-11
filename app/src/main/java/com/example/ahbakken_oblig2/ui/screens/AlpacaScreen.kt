@@ -24,6 +24,7 @@ import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.example.ahbakken_oblig2.R
 import com.example.ahbakken_oblig2.model.AlpacaParty
+import com.example.ahbakken_oblig2.model.Party
 
 
 @Composable
@@ -157,13 +158,11 @@ fun AlpacaPartyCard(
             Text(
                 text = alpacaParty.leader,
             )
-            Text(
-                text = "${ voteUiState.votes3 }",
-            )
 
             if (alpacaUiState.district == "All districts") {
-                val totalVotes = alpacaViewModel.sumAlpacaPartyVotes(voteMapDistrict1, voteMapDistrict2, voteMapDistrict3)
-                Text(text = "Votes: $totalVotes --- ")
+                val totalVotesMap = alpacaViewModel.sumAlpacaPartyVotes(voteMapDistrict1, voteMapDistrict2, voteMapDistrict3)
+                val percentVotes = String.format("%.1f", (totalVotesMap[alpacaParty.id]?.div(( totalVotesMap.values.sum().toFloat() )))?.times(100 ))
+                Text(text = "Votes: ${ totalVotesMap[alpacaParty.id] } --- ${percentVotes}%")
             }
             if (alpacaUiState.district == "District 1"){
                 val totalVotes = voteMapDistrict1[alpacaParty.id]
@@ -172,12 +171,12 @@ fun AlpacaPartyCard(
             }
             if (alpacaUiState.district == "District 2"){
                 val totalVotes = voteMapDistrict2[alpacaParty.id]
-                val percentVotes = String.format("%.1f", (voteMapDistrict1[alpacaParty.id]!!/voteUiState.votes2.size.toFloat()*100))
+                val percentVotes = String.format("%.1f", (voteMapDistrict2[alpacaParty.id]!!/voteUiState.votes2.size.toFloat()*100))
                 Text(text = "Votes: $totalVotes --- $percentVotes%")
             }
             if (alpacaUiState.district == "District 3"){
                 val totalVotes = voteMapDistrict3[alpacaParty.id]
-                val percentVotes = String.format("%.1f", (voteMapDistrict1[alpacaParty.id]!!/voteUiState.votes3.size.toFloat()*100))
+                val percentVotes = String.format("%.1f", (voteMapDistrict3[alpacaParty.id]?.div(( voteUiState.votes3.sumOf<Party>{ it.votes!! }.toFloat() )))?.times(100 ))
                 Text(text = "Votes: $totalVotes --- $percentVotes%")
             }
 

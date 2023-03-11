@@ -63,7 +63,7 @@ class AlpacaViewModel: ViewModel() {
         val alpacaPartyVotes = mutableMapOf<String,Int>()
         districtList.forEach {
             if(alpacaPartyVotes.containsKey(it.id)){
-                alpacaPartyVotes[it.id] = alpacaPartyVotes[it.id]!!
+                alpacaPartyVotes[it.id] = alpacaPartyVotes[it.id]!! +1
             }else{
                 alpacaPartyVotes[it.id] = 1
             }
