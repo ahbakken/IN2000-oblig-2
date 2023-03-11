@@ -33,7 +33,7 @@ class XMLparser {
                 continue
             }
             // Starts by looking for the entry tag
-            if (parser.name == "entry") {
+            if (parser.name == "party") {
                 entries.add(readEntry(parser))
             } else {
                 skip(parser)
@@ -44,7 +44,7 @@ class XMLparser {
     //parses content of an alpaca party
     @Throws(XmlPullParserException::class, IOException::class)
     private fun readEntry(parser: XmlPullParser): Party {
-        parser.require(XmlPullParser.START_TAG, ns, "districtThree")
+        parser.require(XmlPullParser.START_TAG, ns, "party")
         var id : Int? = null
         var votes : Int? = null
         while (parser.next() != XmlPullParser.END_TAG) {
