@@ -10,6 +10,7 @@ import com.example.ahbakken_oblig2.data.VoteDataSource
 import com.example.ahbakken_oblig2.data.VoteDataSourceXML
 import com.example.ahbakken_oblig2.data.AlpacaUiState
 import com.example.ahbakken_oblig2.data.VoteUiState
+import com.example.ahbakken_oblig2.model.AlpacaParty
 import com.example.ahbakken_oblig2.model.Party
 import com.example.ahbakken_oblig2.model.Vote
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -94,5 +95,38 @@ class AlpacaViewModel: ViewModel() {
             district = district
         )
     }
+
+    fun totalVotesMap(alpacaParty: AlpacaParty): String {
+        //JSON, district 1 and 2
+        val voteMapDistrict1 = sumAlpacaVotes(voteUiState.value.votes1)
+        val voteMapDistrict2 = sumAlpacaVotes(voteUiState.value.votes2)
+        //XML, district 3
+        val voteMapDistrict3 = sumAlpacaVotesXML(voteUiState.value.votes3)
+
+        if (alpacaUiState.value.district == "All districts") {
+            val totalVotesMap = sumAlpacaPartyVotes(voteMapDistrict1, voteMapDistrict2, voteMapDistrict3)
+            val percentVotes = String.format("%.1f", (totalVotesMap[alpacaParty.id]?.div(( totalVotesMap.values.sum().toFloat() )))?.times(100 ))
+            return "${ totalVotesMap[alpacaParty.id] } --- $percentVotes"
+        }
+        if (alpacaUiState.value.district == "District 1"){
+            val totalVotes = voteMapDistrict1[alpacaParty.id]
+            val percentVotes = String.format("%.1f", (voteMapDistrict1[alpacaParty.id]!!/voteUiState.value.votes1.size.toFloat()*100))
+            return "$totalVotes --- $percentVotes"
+        }
+        if (alpacaUiState.value.district == "District 2"){
+            val totalVotes = voteMapDistrict2[alpacaParty.id]
+            val percentVotes = String.format("%.1f", (voteMapDistrict2[alpacaParty.id]!!/voteUiState.value.votes2.size.toFloat()*100))
+            return "$totalVotes --- $percentVotes"
+        }
+        return if (alpacaUiState.value.district == "District 3"){
+            val totalVotes = voteMapDistrict3[alpacaParty.id]
+            val percentVotes = String.format("%.1f", (voteMapDistrict3[alpacaParty.id]?.div(( voteUiState.value.votes3.sumOf { it.votes!! }.toFloat() )))?.times(100 ))
+            "$totalVotes --- $percentVotes"
+        } else {
+            " --- "
+        }
+    }
+
+
 
 }

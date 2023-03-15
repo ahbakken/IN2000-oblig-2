@@ -24,7 +24,6 @@ import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.example.ahbakken_oblig2.R
 import com.example.ahbakken_oblig2.model.AlpacaParty
-import com.example.ahbakken_oblig2.model.Party
 
 
 @Composable
@@ -41,7 +40,7 @@ fun AlpacaScreen(
         ChooseDistrict(alpacaViewModel, districts)
         LazyColumn {
             items(alpacaUiState.alpacaParties){
-                AlpacaPartyCard(it, alpacaViewModel)
+                AlpacaPartyCard(it, alpacaViewModel.totalVotesMap(it))
             }
         }
     }
@@ -53,7 +52,6 @@ fun AlpacaScreen(
 @Composable
 fun ChooseDistrict(
     alpacaViewModel: AlpacaViewModel,
-
     districts: List<String>,
 ) {
 
@@ -109,20 +107,8 @@ fun ChooseDistrict(
 @Composable
 fun AlpacaPartyCard(
     alpacaParty: AlpacaParty,
-    alpacaViewModel: AlpacaViewModel,
+    totalVotesMap: String,
 ) {
-
-    val alpacaUiState by alpacaViewModel.alpacaUiState.collectAsState()
-    val voteUiState by alpacaViewModel.voteUiState.collectAsState()
-
-    //JSON, district 1 and 2
-    val voteMapDistrict1 = alpacaViewModel.sumAlpacaVotes(voteUiState.votes1)
-    val voteMapDistrict2 = alpacaViewModel.sumAlpacaVotes(voteUiState.votes2)
-    //XML, district 3
-    val voteMapDistrict3 = alpacaViewModel.sumAlpacaVotesXML(voteUiState.votes3)
-
-
-
     ElevatedCard(
         modifier = Modifier
             .padding(8.dp)
@@ -159,26 +145,7 @@ fun AlpacaPartyCard(
                 text = alpacaParty.leader,
             )
 
-            if (alpacaUiState.district == "All districts") {
-                val totalVotesMap = alpacaViewModel.sumAlpacaPartyVotes(voteMapDistrict1, voteMapDistrict2, voteMapDistrict3)
-                val percentVotes = String.format("%.1f", (totalVotesMap[alpacaParty.id]?.div(( totalVotesMap.values.sum().toFloat() )))?.times(100 ))
-                Text(text = "Votes: ${ totalVotesMap[alpacaParty.id] } --- ${percentVotes}%")
-            }
-            if (alpacaUiState.district == "District 1"){
-                val totalVotes = voteMapDistrict1[alpacaParty.id]
-                val percentVotes = String.format("%.1f", (voteMapDistrict1[alpacaParty.id]!!/voteUiState.votes1.size.toFloat()*100))
-                Text(text = "Votes: $totalVotes --- $percentVotes%")
-            }
-            if (alpacaUiState.district == "District 2"){
-                val totalVotes = voteMapDistrict2[alpacaParty.id]
-                val percentVotes = String.format("%.1f", (voteMapDistrict2[alpacaParty.id]!!/voteUiState.votes2.size.toFloat()*100))
-                Text(text = "Votes: $totalVotes --- $percentVotes%")
-            }
-            if (alpacaUiState.district == "District 3"){
-                val totalVotes = voteMapDistrict3[alpacaParty.id]
-                val percentVotes = String.format("%.1f", (voteMapDistrict3[alpacaParty.id]?.div(( voteUiState.votes3.sumOf<Party>{ it.votes!! }.toFloat() )))?.times(100 ))
-                Text(text = "Votes: $totalVotes --- $percentVotes%")
-            }
+            Text(text = "Votes: $totalVotesMap%")
 
         }
 
